@@ -1,80 +1,104 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>微信付款</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
-body{padding:60px 20px;text-align:center;background:#fff}
-.box{max-width:900px;margin:0 auto}
-h2{font-size:46px;margin-bottom:40px}
-.text-box{
-    padding:30px 20px;
-    border:1px solid #bbb;
-    border-radius:16px;
-    font-size:32px;
-    word-break:break-all;
-    text-align:center;
-    margin-bottom:40px;
-}
-#copyBtn{
-    padding:24px 60px;
-    background:#07C160;
-    color:#fff;
-    border:none;
-    border-radius:12px;
-    font-size:34px;
-    cursor:pointer;
-}
-.tips{
-    margin-top:30px;
-    font-size:30px;
-    color:#222;
-}
-.warn-tip{
-    margin-top:16px;
-    font-size:26px;
-    color:#c0392b;
-}
-/* 备用隐藏文本域，用于兼容低版本浏览器 */
-#tempInput{
-    opacity:0;
-    position:absolute;
-    pointer-events:none;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>头陀村微信收款2.1</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
+        body { padding: 40px 20px; text-align: center; background: #f9f9f9; }
+        .box { max-width: 600px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h2 { margin-bottom: 20px; color: #333; }
+        .text { 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            margin: 20px 0; 
+            font-size: 18px; 
+            word-break: break-all; 
+            background: #f0f7f0; 
+            color: #2e7d32;
+            font-weight: bold;
+        }
+        button { 
+            padding: 14px 32px; 
+            background: #07C160; 
+            color: #fff; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 17px; 
+            cursor: pointer; 
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+        button:active { opacity: 0.8; }
+        .tip { margin-top: 15px; font-size: 14px; color: #888; }
+    </style>
 </head>
 <body>
-<div class="box">
-    <h2>微信付款2.2</h2>
-    <div class="text-box" id="payText">#小程序://微信收款单/cQQpjLjBpfvvOnm</div>
-    <button id="copyBtn">一键复制微信收款通道</button>
-    <p class="tips">复制完成，打开微信，粘贴到任意聊天窗口，点击后就可以完成无相布施了</p>
-    <p class="warn-tip">⚠️一键复制失效时：长按上方方框内文字，手动选中复制</p>
-</div>
+    <div class="box">
+        <h2>头陀村经营收款通道</h2>
+        
+        <!-- 展示付款口令 -->
+        <div class="text" id="payText">#小程序://微信收款单/cQQpjLjBpfvvOnm</div>
+        
+        <!-- 一键复制按钮 -->
+        <button onclick="copyText()">👆 一键复制付款口令与吉祥码</button>
+        
+        <!-- 提示文字 -->
+        <p class="tip" id="tipText">点击按钮后，请前往微信对话框粘贴发送</p>
+    </div>
 
-<!-- 兼容兜底DOM -->
-<input id="tempInput">
+    <script>
+        // 1. 获取URL中的参数
+        function getUrlParam(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURIComponent(r[2]);
+            return null;
+        }
 
-<script>
-const textContent = "#小程序://微信收款单/cQQpjLjBpfvvOnm";
-const btn = document.getElementById('copyBtn');
-const tempInput = document.getElementById('tempInput');
+        // 2. 核心复制逻辑
+        function copyText() {
+            // 获取原本的付款口令
+            const payLink = document.getElementById('payText').innerText;
+            // 获取主页传过来的吉祥码 (参数名为 code)
+            const meritCode = getUrlParam('code');
 
-btn.onclick = async function(){
-    try{
-        // 优先使用现代剪贴板API
-        await navigator.clipboard.writeText(textContent);
-        alert("✅复制成功！前往微信粘贴");
-    }catch(err){
-        // 权限不足，启用兜底复制方案
-        tempInput.value = textContent;
-        tempInput.select();
-        document.execCommand('copy');
-        alert("⚠️浏览器权限限制，已尝试复制；如不成功，请长按方框文字手动复制");
-    }
-}
-</script>
+            // 准备最终要复制的内容
+            let finalCopyText = payLink;
+            const tipText = document.getElementById('tipText');
+
+            // 如果成功获取到了吉祥码，就将其与付款口令拼接
+            if (meritCode) {
+                finalCopyText = payLink + "\n\n【无相吉祥码】：" + meritCode;
+                tipText.innerText = "✅ 复制成功！已包含吉祥码，请去微信粘贴";
+            } else {
+                tipText.innerText = "✅ 复制成功！(未检测到吉祥码)";
+            }
+
+            // 执行复制到剪贴板
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(finalCopyText).catch(err => {
+                    console.error('复制失败', err);
+                });
+            } else {
+                // ==========================================
+                // 权限不足，启用兜底复制方案
+                // ==========================================
+                var tempInput = document.createElement('input');
+                tempInput.style.position = 'absolute';
+                tempInput.style.left = '-9999px';
+                tempInput.value = finalCopyText;
+                document.body.appendChild(tempInput);
+                
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                
+                alert("⚠️浏览器权限限制，已尝试复制；如不成功，请长按方框文字手动复制");
+            }
+        }
+    </script>
 </body>
 </html>
