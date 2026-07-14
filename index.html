@@ -3,102 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>头陀村微信收款2.1</title>
+    <title>头陀村经营收款通道</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
-        body { padding: 40px 20px; text-align: center; background: #f9f9f9; }
-        .box { max-width: 600px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        h2 { margin-bottom: 20px; color: #333; }
-        .text { 
+        /* 基础重置与布局 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+        body { 
+            padding: 40px 20px; 
+            text-align: center; 
+            background: #f9f9f9; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        /* 卡片容器 */
+        .box { 
+            max-width: 500px; 
+            margin: 0 auto; 
+            background: #fff; 
+            padding: 30px 20px; 
+            border-radius: 16px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08); 
+        }
+
+        h2 { margin-bottom: 25px; color: #333; font-size: 22px; font-weight: 600; }
+        
+        /* 显示口令的区域 */
+        .text-area { 
             padding: 20px; 
-            border: 1px solid #ddd; 
+            background: #f0f7f0; 
+            border: 1px dashed #2e7d32; 
             border-radius: 8px; 
             margin: 20px 0; 
             font-size: 18px; 
-            word-break: break-all; 
-            background: #f0f7f0; 
             color: #2e7d32;
+            word-break: break-all;
+            line-height: 1.5;
             font-weight: bold;
         }
-        button { 
-            padding: 14px 32px; 
-            background: #07C160; 
-            color: #fff; 
-            border: none; 
-            border-radius: 8px; 
-            font-size: 17px; 
-            cursor: pointer; 
+
+        /* 按钮样式 */
+        .btn {
+            background-color: #07c160;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
             width: 100%;
             transition: opacity 0.2s;
+            box-shadow: 0 4px 12px rgba(7, 193, 96, 0.3);
         }
-        button:active { opacity: 0.8; }
-        .tip { margin-top: 15px; font-size: 14px; color: #888; }
+        .btn:active { opacity: 0.8; transform: scale(0.98); }
+
+        /* 状态提示文字 */
+        .status {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+            height: 20px;
+        }
+        .success { color: #07c160; }
+        .error { color: #fa5151; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>头陀村经营收款通道</h2>
-        
-        <!-- 展示付款口令 -->
-        <div class="text" id="payText">#小程序://微信收款单/cQQpjLjBpfvvOnm</div>
-        
-        <!-- 一键复制按钮 -->
-        <button onclick="copyText()">👆 一键复制付款口令与吉祥码</button>
-        
-        <!-- 提示文字 -->
-        <p class="tip" id="tipText">点击按钮后，请前往微信对话框粘贴发送</p>
-    </div>
 
-    <script>
-        // 1. 获取URL中的参数
-        function getUrlParam(name) {
-            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
-            var r = window.location.search.substr(1).match(reg);
-            if (r != null) return decodeURIComponent(r[2]);
-            return null;
+<div class="box">
+    <h2>头陀村经营收款通道</h2>
+    
+    <!-- 这里显示合并后的内容 -->
+    <div id="displayArea" class="text-area">正在加载...</div>
+
+    <button class="btn" onclick="copyContent()">👆 一键复制付款口令与吉祥码</button>
+    
+    <div id="statusMsg" class="status"></div>
+</div>
+
+<script>
+    // 核心配置：您的原始收款口令
+    const BASE_CODE = "#小程序://微信收款单/cQQpjLjBpfvvOnm"; 
+    
+    // 页面加载时立即执行读取逻辑
+    window.onload = function() {
+        let finalContent = BASE_CODE;
+        let luckyCode = "";
+
+        // --- 第一步：尝试从 URL 参数获取 (最稳妥) ---
+        const urlParams = new URLSearchParams(window.location.search);
+        luckyCode = urlParams.get('code');
+
+        // --- 第二步：如果 URL 没有，尝试从 localStorage 获取 ---
+        if (!luckyCode) {
+            luckyCode = localStorage.getItem('user_lucky_code');
         }
 
-        // 2. 核心复制逻辑
-        function copyText() {
-            // 获取原本的付款口令
-            const payLink = document.getElementById('payText').innerText;
-            // 获取主页传过来的吉祥码 (参数名为 code)
-            const meritCode = getUrlParam('code');
-
-            // 准备最终要复制的内容
-            let finalCopyText = payLink;
-            const tipText = document.getElementById('tipText');
-
-            // 如果成功获取到了吉祥码，就将其与付款口令拼接
-            if (meritCode) {
-                finalCopyText = payLink + "\n\n【无相吉祥码】：" + meritCode;
-                tipText.innerText = "✅ 复制成功！已包含吉祥码，请去微信粘贴";
-            } else {
-                tipText.innerText = "✅ 复制成功！(未检测到吉祥码)";
-            }
-
-            // 执行复制到剪贴板
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(finalCopyText).catch(err => {
-                    console.error('复制失败', err);
-                });
-            } else {
-                // ==========================================
-                // 权限不足，启用兜底复制方案
-                // ==========================================
-                var tempInput = document.createElement('input');
-                tempInput.style.position = 'absolute';
-                tempInput.style.left = '-9999px';
-                tempInput.value = finalCopyText;
-                document.body.appendChild(tempInput);
-                
-                tempInput.select();
-                document.execCommand('copy');
-                document.body.removeChild(tempInput);
-                
-                alert("⚠️浏览器权限限制，已尝试复制；如不成功，请长按方框文字手动复制");
-            }
+        // --- 第三步：如果还没有，尝试从 opener (父窗口) 获取 ---
+        if (!luckyCode && window.opener) {
+            try {
+                // 假设主页把变量存在了 window.luckyCodeResult
+                luckyCode = window.opener.luckyCodeResult; 
+            } catch(e) { console.log("跨域限制无法读取"); }
         }
-    </script>
+
+        // --- 处理最终显示内容 ---
+        const displayDiv = document.getElementById('displayArea');
+        
+        if (luckyCode && luckyCode.length > 0) {
+            // 拼接逻辑：口令 + 换行 + 吉祥码
+            finalContent = BASE_CODE + "\n\n" + "我的吉祥码：" + luckyCode;
+            displayDiv.innerText = finalContent;
+            document.getElementById('statusMsg').innerText = "✅ 已自动关联吉祥码";
+            document.getElementById('statusMsg').className = "status success";
+        } else {
+            // 没读到吉祥码的兜底显示
+            finalContent = BASE_CODE;
+            displayDiv.innerText = finalContent;
+            document.getElementById('statusMsg').innerText = "⚠️ 未检测到吉祥码，仅复制口令";
+            document.getElementById('statusMsg').className = "status error";
+        }
+    };
+
+    // 复制功能函数
+    function copyContent() {
+        const textToCopy = document.getElementById('displayArea').innerText;
+        const statusMsg = document.getElementById('statusMsg');
+
+        // 优先使用现代 API
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showSuccess(statusMsg);
+            }).catch(err => {
+                // 现代 API 失败，降级到兜底方案
+                fallbackCopy(textToCopy, statusMsg);
+            });
+        } else {
+            // 浏览器太老，直接用兜底方案
+            fallbackCopy(textToCopy, statusMsg);
+        }
+    }
+
+    // ✅ 您提到的“兜底方案” (兼容旧浏览器/微信环境)
+    function fallbackCopy(text, statusElement) {
+        const tempInput = document.createElement("input");
+        tempInput.value = text;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        
+        try {
+            document.execCommand('copy');
+            showSuccess(statusElement);
+        } catch (err) {
+            statusElement.innerText = "❌ 复制失败，请长按上方文字手动复制";
+            statusElement.className = "status error";
+        }
+        
+        document.body.removeChild(tempInput);
+    }
+
+    // 显示成功提示
+    function showSuccess(element) {
+        element.innerText = "✅ 复制成功！快去粘贴吧";
+        element.className = "status success";
+        
+        // 2秒后恢复原状
+        setTimeout(() => {
+            const luckyCode = localStorage.getItem('user_lucky_code') || "";
+            if(luckyCode) {
+                 element.innerText = "✅ 已自动关联吉祥码";
+            } else {
+                 element.innerText = "⚠️ 未检测到吉祥码";
+            }
+        }, 2000);
+    }
+</script>
+
 </body>
 </html>
