@@ -3,28 +3,77 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>头陀村经营收款1.1</title>
+<title>微信付款</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
-body{padding:40px 20px;text-align:center;background:#fff}
-.box{max-width:600px;margin:0 auto}
-.text{padding:20px;border:1px solid #ccc;border-radius:8px;margin:30px 0;font-size:18px;word-break:break-all}
-button{padding:14px 32px;background:#07C160;color:#fff;border:none;border-radius:6px;font-size:17px;cursor:pointer}
+body{padding:60px 20px;text-align:center;background:#fff}
+.box{max-width:900px;margin:0 auto}
+h2{font-size:46px;margin-bottom:40px}
+.text-box{
+    padding:30px 20px;
+    border:1px solid #bbb;
+    border-radius:16px;
+    font-size:32px;
+    word-break:break-all;
+    text-align:center;
+    margin-bottom:40px;
+}
+#copyBtn{
+    padding:24px 60px;
+    background:#07C160;
+    color:#fff;
+    border:none;
+    border-radius:12px;
+    font-size:34px;
+    cursor:pointer;
+}
+.tips{
+    margin-top:30px;
+    font-size:30px;
+    color:#222;
+}
+.warn-tip{
+    margin-top:16px;
+    font-size:26px;
+    color:#c0392b;
+}
+/* 备用隐藏文本域，用于兼容低版本浏览器 */
+#tempInput{
+    opacity:0;
+    position:absolute;
+    pointer-events:none;
+}
 </style>
 </head>
 <body>
 <div class="box">
-  <div class="block">
-    <h2>微信付款</h2>
-    <div class="text" id="wechatText">小程序://微信收款单/cQQpjLjBpfvvOnm</div>
-    <button class="btn-wechat" onclick="copyWechat()">一键复制微信收款通道</button>
+    <h2>微信付款1.11</h2>
+    <div class="text-box" id="payText">小程序://微信收款单/cQQpjLjBpfvvOnm</div>
+    <button id="copyBtn">一键复制微信收款通道</button>
     <p class="tips">复制完成，打开微信，粘贴到任意聊天窗口，点击进入付款</p>
+    <p class="warn-tip">⚠️一键复制失效时：长按上方方框内文字，手动选中复制</p>
 </div>
+
+<!-- 兼容兜底DOM -->
+<input id="tempInput">
+
 <script>
-function copyText(){
-  const text=document.getElementById("payText").innerText;
-  navigator.clipboard.writeText(text);
-  alert("收款口令复制成功，请打开微信");
+const textContent = "小程序://微信收款单/cQQpjLjBpfvvOnm";
+const btn = document.getElementById('copyBtn');
+const tempInput = document.getElementById('tempInput');
+
+btn.onclick = async function(){
+    try{
+        // 优先使用现代剪贴板API
+        await navigator.clipboard.writeText(textContent);
+        alert("✅复制成功！前往微信粘贴");
+    }catch(err){
+        // 权限不足，启用兜底复制方案
+        tempInput.value = textContent;
+        tempInput.select();
+        document.execCommand('copy');
+        alert("⚠️浏览器权限限制，已尝试复制；如不成功，请长按方框文字手动复制");
+    }
 }
 </script>
 </body>
