@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>头陀度假村经营收款</title>
+<title>头陀村经营收款1.1</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
 body{padding:40px 20px;text-align:center;background:#fff}
@@ -14,10 +14,11 @@ button{padding:14px 32px;background:#07C160;color:#fff;border:none;border-radius
 </head>
 <body>
 <div class="box">
-<h2>头陀度假村经营收款通道</h2>
-<div class="text" id="payText">#付款:头陀度假村(经营_amtfljw_wydnnlq)/收款/001</div>
-<button onclick="copyText()">一键复制收款口令</button>
-<p style="margin-top:24px;color:#666">复制完成后，打开微信自动识别进行付款</p>
+  <div class="block">
+    <h2>微信付款</h2>
+    <div class="text" id="wechatText">小程序://微信收款单/cQQpjLjBpfvvOnm</div>
+    <button class="btn-wechat" onclick="copyWechat()">一键复制微信收款通道</button>
+    <p class="tips">复制完成，打开微信，粘贴到任意聊天窗口，点击进入付款</p>
 </div>
 <script>
 function copyText(){
