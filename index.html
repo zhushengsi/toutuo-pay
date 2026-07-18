@@ -41,9 +41,9 @@
         font-weight: bold;
     }
 
-    /* 吉祥码展示区样式 (默认隐藏) */
+    /* 吉祥码展示区样式 */
     #luckyCodeArea {
-        display: none; /* 默认不显示，JS检测到有码才显示 */
+        display: none; /* 默认隐藏，JS控制显示 */
         background-color: #e8f5e9;
         border-color: #2e7d32;
         margin-bottom: 30px;
@@ -79,7 +79,7 @@
 
     .btn:active { transform: scale(0.98); }
 
-    /* 主操作按钮（合并复制） */
+    /* 主操作按钮 */
     #mergeCopyBtn {
         background: #07C160;
         color: #fff;
@@ -87,7 +87,7 @@
         box-shadow: 0 4px 12px rgba(7, 193, 96, 0.4);
     }
 
-    /* 辅助按钮（仅复制支付链接） */
+    /* 辅助按钮 */
     #copyLinkBtn {
         background: #fff;
         color: #07C160;
@@ -118,7 +118,7 @@
 <div class="box">
     <h2>微信付款 1.12</h2>
 
-    <!-- 1. 吉祥码展示区 (动态显示) -->
+    <!-- 1. 吉祥码展示区 -->
     <div id="luckyCodeArea" class="text-box">
         <p class="title">检测到您的专属吉祥码：</p>
         <div id="displayCode" class="code-text"></div>
@@ -150,7 +150,7 @@
 <script>
     // --- 变量定义 ---
     const payTextElement = document.getElementById('payText');
-    const payLink = payTextElement.innerText.trim(); // 获取纯文本链接
+    const payLink = payTextElement.innerText.trim(); 
     
     const luckyCodeArea = document.getElementById('luckyCodeArea');
     const displayCode = document.getElementById('displayCode');
@@ -163,10 +163,9 @@
         const savedCode = localStorage.getItem('wuxiangLuckyCode');
         if (savedCode) {
             displayCode.innerText = savedCode;
-            luckyCodeArea.style.display = 'block'; // 显示吉祥码区域
-            mergeBtn.innerText = "一键合并复制 (链接+吉祥码)"; // 更新按钮文字
+            luckyCodeArea.style.display = 'block'; 
+            mergeBtn.innerText = "一键合并复制 (链接+吉祥码)"; 
         } else {
-            // 如果没有吉祥码，隐藏该区域，按钮变为只复制链接
             luckyCodeArea.style.display = 'none';
             mergeBtn.innerText = "复制支付链接"; 
         }
@@ -178,21 +177,22 @@
         const savedCode = localStorage.getItem('wuxiangLuckyCode');
 
         if (savedCode) {
-            // 【修改点】：如果有吉祥码，拼接内容：链接 + 换行 + 吉祥码 + 换行 + 醒目的提醒
-            contentToCopy = payLink + "\n\n\n" + 
-                            "====================\n" + 
-                            "🔴 【给长辈的重要提醒】 🔴\n" + 
-                            "====================\n" + 
-                            "请在点击付款链接前，先长按上方吉祥码复制，记得在微信付款页面的下方点击备注，再将吉祥码粘贴到备注里！\n" + 
-                            "(不填备注可能导致功德无法记录哦)\n" + 
-                            "====================";
-        } else {
-            // 否则只复制链接
-            contentToCopy = payLink;
-        }
-
-        // 【修改点】：调用复制函数，并传入对应的成功提示语
+           // 【修复点】这里把 savedCode 加回去了，并且用 \n\n 分隔开
+           contentToCopy = payLink + "\n\n" + savedCode + "\n\n" + 
+                "====================\n" + 
+                "🔴 【给长辈的重要提醒】 🔴\n" + 
+                "====================\n" + 
+                "请在点击付款链接前，先长按上方吉祥码复制，记得在微信付款页面的下方点击备注，再将吉祥码粘贴到备注里！\n" + 
+                "(不填备注可能导致功德无法记录哦)\n" + 
+                "====================";
+        
+        // 调用复制函数
         performCopy(contentToCopy, "✅ 已复制！\n请在微信粘贴后，先复制吉祥码用于填写备注信息（实现无相关键环节），再点链接支付。");
+        
+        } else {
+            // 如果没有吉祥码，只复制链接
+            performCopy(payLink, "✅ 支付链接已复制！");
+        }
     };
 
     // --- 辅助功能：仅复制链接 ---
@@ -200,25 +200,23 @@
         performCopy(payLink, "✅ 支付链接已复制！");
     };
 
-    // --- 通用复制函数 (包含降级处理) ---
+    // --- 通用复制函数 ---
     function performCopy(text, successMsg) {
         if (navigator.clipboard && window.isSecureContext) {
-            // 现代浏览器 API
             navigator.clipboard.writeText(text).then(() => {
                 alert(successMsg);
             }).catch(err => {
                 fallbackCopy(text, successMsg);
             });
         } else {
-            // 降级方案
             fallbackCopy(text, successMsg);
         }
     }
 
-    // --- 降级复制方案 (使用 execCommand) ---
+    // --- 降级复制方案 ---
     function fallbackCopy(text, msg) {
         tempInput.value = text;
-        tempInput.style.position = 'fixed'; // 防止页面滚动
+        tempInput.style.position = 'fixed'; 
         tempInput.style.left = '-9999px';
         document.body.appendChild(tempInput);
         tempInput.focus();
