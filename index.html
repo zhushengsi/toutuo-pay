@@ -98,6 +98,33 @@
 </style>
 </head>
 <body>
+    <!-- 【新增代码开始】用于显示从主页传来的吉祥码 -->
+<div id="code-from-home" style="text-align: center; padding: 10px; background-color: #e8f5e9; border: 1px dashed #2e7d32; border-radius: 8px; margin-bottom: 20px; display: none;">
+  <p style="margin: 0; font-weight: bold; color: #2e7d32;">检测到您的吉祥码：</p>
+  <p id="display-code" style="margin: 10px 0 0 0; font-size: 1.2em; font-family: monospace;"></p>
+  <button onclick="copyFromDisplay()" style="margin-top: 10px; padding: 5px 10px; font-size: 0.9em;">再次复制</button>
+</div>
+<!-- 【新增代码结束】 -->
+
+<script>
+  // 【新增代码开始】页面加载时检查并显示吉祥码
+  window.onload = function() {
+    const savedCode = localStorage.getItem('wuxiangLuckyCode');
+    if (savedCode) {
+      document.getElementById('display-code').innerText = savedCode;
+      document.getElementById('code-from-home').style.display = 'block';
+    }
+  }
+
+  // 提供一个按钮，方便用户再次复制
+  function copyFromDisplay() {
+    const code = document.getElementById('display-code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      alert('吉祥码已复制！');
+    });
+  }
+  // 【新增代码结束】
+</script>
 <div class="box">
     <h2>微信付款 1.12</h2>
     
