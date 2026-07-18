@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>微信付款 1.12</title>
+<title>微信付款 1.13</title>
 <style>
     /* 全局样式重置 */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
@@ -116,7 +116,7 @@
 <body>
 
 <div class="box">
-    <h2>微信付款 1.12</h2>
+    <h2>微信付款 1.13</h2>
 
     <!-- 1. 吉祥码展示区 -->
     <div id="luckyCodeArea" class="text-box">
@@ -177,13 +177,16 @@
         const savedCode = localStorage.getItem('wuxiangLuckyCode');
 
         if (savedCode) {
-           // 【修复点】这里把 savedCode 加回去了，并且用 \n\n 分隔开
-           contentToCopy = payLink + "\n\n" + savedCode + "\n\n" + 
+           // 【修改点】拼接顺序：电脑提示 -> 支付链接 -> 吉祥码 -> 主页链接 -> 操作提醒
+           contentToCopy = "⚠️ 电脑用户请注意：微信电脑版无法完成支付，请务必在手机微信端打开！\n\n" + 
+                payLink + "\n\n" + 
+                savedCode + "\n\n" +
+                "🔗 欢迎访问和推广无相布施助手主页: https://zhushengsi.github.io/.github.io\n\n" + 
                 "====================\n" + 
-                "🔴 【给长辈的重要提醒】 🔴\n" + 
+                "🔴 【重要提醒】 🔴\n" + 
                 "====================\n" + 
                 "请在点击付款链接前，先长按上方吉祥码复制，记得在微信付款页面的下方点击备注，再将吉祥码粘贴到备注里！\n" + 
-                "(不填备注可能导致功德无法记录哦)\n" + 
+                "(不粘贴到备注可能导致以后无法查询支付记录哦)\n" + 
                 "====================";
         
         // 调用复制函数
