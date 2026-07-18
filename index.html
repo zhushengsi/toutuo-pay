@@ -16,12 +16,12 @@
     }
 
     .box { 
-        max-width: 600px; /* 限制最大宽度，防止在大屏上太宽 */
+        max-width: 600px; 
         margin: 0 auto; 
     }
 
     h2 { 
-        font-size: 2rem; /* 使用相对单位 rem，比 px 更灵活 */
+        font-size: 2rem; 
         margin-bottom: 30px; 
         color: #000;
     }
@@ -29,11 +29,11 @@
     /* 核心修改：链接显示区域样式 */
     .text-box {
         padding: 20px;
-        border: 1px dashed #07C160; /* 改为虚线框，更像待复制区域 */
+        border: 1px dashed #07C160; 
         background-color: #f9fdfa;
         border-radius: 12px;
-        font-size: 1.2rem; /* 默认字体大小 */
-        word-break: break-all; /* 强制长单词换行，防止撑破屏幕 */
+        font-size: 1.2rem; 
+        word-break: break-all; 
         text-align: center;
         margin-bottom: 30px;
         line-height: 1.5;
@@ -41,23 +41,39 @@
         font-weight: bold;
     }
 
+    /* 【新增】吉祥码专属显示框样式，使用绿色主题 */
+    .code-box {
+        padding: 15px;
+        border: 1px dashed #2e7d32; 
+        background-color: #e8f5e9;
+        border-radius: 12px;
+        font-size: 1.2rem; 
+        text-align: center;
+        margin-bottom: 20px;
+        line-height: 1.5;
+        color: #2e7d32;
+        font-weight: bold;
+        font-family: monospace;
+    }
+
     /* 按钮样式优化 */
-    #copyBtn {
-        width: 100%; /* 手机上按钮全宽更好点击 */
-        max-width: 300px; /* 电脑上限制宽度 */
+    #copyBtn, .copy-code-btn {
+        width: 100%; 
+        max-width: 300px; 
         padding: 18px 0;
         background: #07C160;
         color: #fff;
         border: none;
-        border-radius: 50px; /* 圆角按钮更现代 */
+        border-radius: 50px; 
         font-size: 1.2rem;
         cursor: pointer;
         box-shadow: 0 4px 12px rgba(7, 193, 96, 0.3);
         transition: transform 0.1s;
+        margin-bottom: 15px;
     }
 
-    #copyBtn:active {
-        transform: scale(0.98); /* 点击时的按压效果 */
+    #copyBtn:active, .copy-code-btn:active {
+        transform: scale(0.98); 
     }
 
     .tips {
@@ -70,7 +86,7 @@
     .warn-tip {
         margin-top: 15px;
         font-size: 0.9rem;
-        color: #e67e22; /* 橙色警告色 */
+        color: #e67e22; 
     }
 
     /* 隐藏输入框 */
@@ -82,13 +98,12 @@
         
         h2 { font-size: 1.5rem; margin-bottom: 20px; }
         
-        /* 重点：缩小手机端方框内的字体 */
-        .text-box {
-            font-size: 1rem; /* 手机上调整为 16px 左右，不再巨大 */
+        .text-box, .code-box {
+            font-size: 1rem; 
             padding: 15px;
         }
 
-        #copyBtn {
+        #copyBtn, .copy-code-btn {
             font-size: 1.1rem;
             padding: 15px 0;
         }
@@ -98,16 +113,34 @@
 </style>
 </head>
 <body>
-    <!-- 【新增代码开始】用于显示从主页传来的吉祥码 -->
-<div id="code-from-home" style="text-align: center; padding: 10px; background-color: #e8f5e9; border: 1px dashed #2e7d32; border-radius: 8px; margin-bottom: 20px; display: none;">
-  <p style="margin: 0; font-weight: bold; color: #2e7d32;">检测到您的吉祥码：</p>
-  <p id="display-code" style="margin: 10px 0 0 0; font-size: 1.2em; font-family: monospace;"></p>
-  <button onclick="copyFromDisplay()" style="margin-top: 10px; padding: 5px 10px; font-size: 0.9em;">再次复制</button>
+
+<div class="box">
+    <!-- 【新增】用于显示从主页传来的吉祥码，默认隐藏 -->
+    <div id="code-from-home" class="code-box" style="display: none;">
+        <p style="margin: 0 0 5px 0; font-size: 0.9em; color: #555;">检测到您的吉祥码：</p>
+        <p id="display-code"></p>
+        <button class="copy-code-btn" onclick="copyFromDisplay()">一键复制吉祥码</button>
+    </div>
+
+    <h2>微信付款 1.12</h2>
+    
+    <div class="text-box" id="payText">#付款:头陀度假村(经营_amtfljw_wydnnlq)/收款/001</div>
+    
+    <button id="copyBtn">一键复制微信收款通道</button>
+    
+    <!-- 【更新】提示语，让老年人更清楚如何操作 -->
+    <p class="tips">
+        1. 复制完成，打开微信<br>
+        2. 粘贴到任意聊天窗口，点击进入付款
+    </p>
+    <p class="warn-tip">⚠️ 一键复制失效时：长按上方方框内文字，手动选中复制</p>
 </div>
-<!-- 【新增代码结束】 -->
+
+<!-- 兼容兜底DOM -->
+<input id="tempInput">
 
 <script>
-  // 【新增代码开始】页面加载时检查并显示吉祥码
+  // 1. 页面加载时检查并显示吉祥码
   window.onload = function() {
     const savedCode = localStorage.getItem('wuxiangLuckyCode');
     if (savedCode) {
@@ -116,51 +149,42 @@
     }
   }
 
-  // 提供一个按钮，方便用户再次复制
+  // 2. 吉祥码复制功能
   function copyFromDisplay() {
     const code = document.getElementById('display-code').innerText;
-    navigator.clipboard.writeText(code).then(() => {
-      alert('吉祥码已复制！');
-    });
-  }
-  // 【新增代码结束】
-</script>
-<div class="box">
-    <h2>微信付款 1.12</h2>
-    
-    <!-- 修复了这里的语法，确保文字能显示出来 -->
-    <div class="text-box" id="payText">#付款:头陀度假村(经营_amtfljw_wydnnlq)/收款/001</div>
-    
-    <button id="copyBtn">一键复制微信收款通道</button>
-    
-    <p class="tips">复制完成，打开微信<br>粘贴到任意聊天窗口，点击进入付款</p>
-    <p class="warn-tip">⚠️一键复制失效时：长按上方方框内文字，手动选中复制</p>
-</div>
-
-<!-- 兼容兜底DOM -->
-<input id="tempInput">
-
-<script>
-// 获取显示的文本内容
-const payTextElement = document.getElementById('payText');
-const textContent = payTextElement.innerText; 
-
-const btn = document.getElementById('copyBtn');
-const tempInput = document.getElementById('tempInput');
-
-btn.onclick = async function(){
-    try{
-        // 优先使用现代剪贴板API
-        await navigator.clipboard.writeText(textContent);
-        alert("✅复制成功！\n请前往微信粘贴发送");
-    }catch(err){
-        // 权限不足，启用兜底复制方案
-        tempInput.value = textContent;
-        tempInput.select();
-        document.execCommand('copy');
-        alert("⚠️浏览器限制，已尝试自动复制。\n如失败，请长按上方方框文字手动复制");
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(code).then(() => {
+            alert('✅ 吉祥码已复制！');
+        }).catch(() => {
+            fallbackCopy(code);
+        });
+    } else {
+        fallbackCopy(code);
     }
-}
+  }
+
+  // 3. 微信收款通道复制功能
+  const payTextElement = document.getElementById('payText');
+  const textContent = payTextElement.innerText; 
+  const btn = document.getElementById('copyBtn');
+  const tempInput = document.getElementById('tempInput');
+
+  btn.onclick = async function(){
+      try{
+          await navigator.clipboard.writeText(textContent);
+          alert("✅ 复制成功！\n请前往微信粘贴发送");
+      }catch(err){
+          fallbackCopy(textContent);
+      }
+  }
+
+  // 4. 兜底复制方案（兼容旧浏览器）
+  function fallbackCopy(text) {
+      tempInput.value = text;
+      tempInput.select();
+      document.execCommand('copy');
+      alert("⚠️ 浏览器限制，已尝试自动复制。\n如失败，请长按上方方框文字手动复制");
+  }
 </script>
 </body>
 </html>
