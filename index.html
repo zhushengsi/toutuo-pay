@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>微信付款1.12</title>
+<title>微信付款 1.12</title>
 <style>
     /* 全局样式重置 */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
@@ -26,165 +26,207 @@
         color: #000;
     }
 
-    /* 核心修改：链接显示区域样式 */
+    /* 通用方框样式 */
     .text-box {
         padding: 20px;
         border: 1px dashed #07C160; 
         background-color: #f9fdfa;
         border-radius: 12px;
-        font-size: 1.2rem; 
-        word-break: break-all; 
+        font-size: 1.1rem;
+        word-break: break-all;
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
         line-height: 1.5;
         color: #333;
         font-weight: bold;
     }
 
-    /* 【新增】吉祥码专属显示框样式，使用绿色主题 */
-    .code-box {
-        padding: 15px;
-        border: 1px dashed #2e7d32; 
+    /* 吉祥码展示区样式 (默认隐藏) */
+    #luckyCodeArea {
+        display: none; /* 默认不显示，JS检测到有码才显示 */
         background-color: #e8f5e9;
-        border-radius: 12px;
-        font-size: 1.2rem; 
-        text-align: center;
-        margin-bottom: 20px;
-        line-height: 1.5;
+        border-color: #2e7d32;
+        margin-bottom: 30px;
+    }
+    
+    #luckyCodeArea p.title {
+        font-size: 0.9rem;
         color: #2e7d32;
-        font-weight: bold;
-        font-family: monospace;
+        margin-bottom: 5px;
+        font-weight: normal;
     }
 
-    /* 按钮样式优化 */
-    #copyBtn, .copy-code-btn {
-        width: 100%; 
-        max-width: 300px; 
-        padding: 18px 0;
-        background: #07C160;
-        color: #fff;
+    #luckyCodeArea .code-text {
+        font-size: 1.3rem;
+        color: #1b5e20;
+        font-family: monospace;
+        letter-spacing: 1px;
+    }
+
+    /* 按钮样式 */
+    .btn {
+        width: 100%;
+        max-width: 320px;
+        padding: 16px 0;
         border: none;
-        border-radius: 50px; 
-        font-size: 1.2rem;
+        border-radius: 50px;
+        font-size: 1.1rem;
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(7, 193, 96, 0.3);
         transition: transform 0.1s;
         margin-bottom: 15px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    #copyBtn:active, .copy-code-btn:active {
-        transform: scale(0.98); 
+    .btn:active { transform: scale(0.98); }
+
+    /* 主操作按钮（合并复制） */
+    #mergeCopyBtn {
+        background: #07C160;
+        color: #fff;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(7, 193, 96, 0.4);
+    }
+
+    /* 辅助按钮（仅复制支付链接） */
+    #copyLinkBtn {
+        background: #fff;
+        color: #07C160;
+        border: 1px solid #07C160;
+        font-size: 1rem;
+        padding: 12px 0;
     }
 
     .tips {
         margin-top: 25px;
-        font-size: 1rem;
+        font-size: 0.95rem;
         color: #666;
         line-height: 1.6;
     }
 
     .warn-tip {
-        margin-top: 15px;
-        font-size: 0.9rem;
-        color: #e67e22; 
+        margin-top: 10px;
+        font-size: 0.85rem;
+        color: #e67e22;
     }
 
-    /* 隐藏输入框 */
+    /* 兼容兜底DOM */
     #tempInput { opacity: 0; position: absolute; pointer-events: none; }
-
-    /* --- 手机端专属适配 (媒体查询) --- */
-    @media screen and (max-width: 768px) {
-        body { padding: 30px 15px; }
-        
-        h2 { font-size: 1.5rem; margin-bottom: 20px; }
-        
-        .text-box, .code-box {
-            font-size: 1rem; 
-            padding: 15px;
-        }
-
-        #copyBtn, .copy-code-btn {
-            font-size: 1.1rem;
-            padding: 15px 0;
-        }
-        
-        .tips { font-size: 0.9rem; }
-    }
 </style>
 </head>
 <body>
 
 <div class="box">
-    <!-- 【新增】用于显示从主页传来的吉祥码，默认隐藏 -->
-    <div id="code-from-home" class="code-box" style="display: none;">
-        <p style="margin: 0 0 5px 0; font-size: 0.9em; color: #555;">检测到您的吉祥码：</p>
-        <p id="display-code"></p>
-        <button class="copy-code-btn" onclick="copyFromDisplay()">一键复制吉祥码</button>
-    </div>
-
     <h2>微信付款 1.12</h2>
+
+    <!-- 1. 吉祥码展示区 (动态显示) -->
+    <div id="luckyCodeArea" class="text-box">
+        <p class="title">检测到您的专属吉祥码：</p>
+        <div id="displayCode" class="code-text"></div>
+    </div>
     
+    <!-- 2. 支付链接展示区 -->
     <div class="text-box" id="payText">#付款:头陀度假村(经营_amtfljw_wydnnlq)/收款/001</div>
     
-    <button id="copyBtn">一键复制微信收款通道</button>
+    <!-- 3. 核心操作按钮 -->
+    <button id="mergeCopyBtn" class="btn">一键合并复制 (链接+吉祥码)</button>
     
-    <!-- 【更新】提示语，让老年人更清楚如何操作 -->
-    <p class="tips">
-        1. 复制完成，打开微信<br>
-        2. 粘贴到任意聊天窗口，点击进入付款
-    </p>
-    <p class="warn-tip">⚠️ 一键复制失效时：长按上方方框内文字，手动选中复制</p>
+    <!-- 备用按钮 -->
+    <button id="copyLinkBtn" class="btn">仅复制支付链接</button>
+    
+    <!-- 4. 操作指引 -->
+    <div class="tips">
+        <p style="font-weight:bold; color:#333; margin-bottom:5px;">操作步骤：</p>
+        <p>1. 点击上方绿色按钮，一次性复制所有内容。</p>
+        <p>2. 打开微信，粘贴发送给任意好友或文件传输助手。</p>
+        <p style="color:#d32f2f; margin-top:5px;">⚠️重要提醒：<br>粘贴后，请先长按复制第二行的<b>“无相布施者...”吉祥码</b>作为备注信息，<br><b>然后再点击第一行的链接进行支付。</b></p>
+    </div>
+    
+    <p class="warn-tip">⚠️如自动复制失效，请长按上方方框内文字手动全选复制</p>
 </div>
 
-<!-- 兼容兜底DOM -->
+<!-- 兼容兜底输入框 -->
 <input id="tempInput">
 
 <script>
-  // 1. 页面加载时检查并显示吉祥码
-  window.onload = function() {
-    const savedCode = localStorage.getItem('wuxiangLuckyCode');
-    if (savedCode) {
-      document.getElementById('display-code').innerText = savedCode;
-      document.getElementById('code-from-home').style.display = 'block';
+    // --- 变量定义 ---
+    const payTextElement = document.getElementById('payText');
+    const payLink = payTextElement.innerText.trim(); // 获取纯文本链接
+    
+    const luckyCodeArea = document.getElementById('luckyCodeArea');
+    const displayCode = document.getElementById('displayCode');
+    const mergeBtn = document.getElementById('mergeCopyBtn');
+    const linkBtn = document.getElementById('copyLinkBtn');
+    const tempInput = document.getElementById('tempInput');
+
+    // --- 初始化：检查是否有吉祥码 ---
+    window.onload = function() {
+        const savedCode = localStorage.getItem('wuxiangLuckyCode');
+        if (savedCode) {
+            displayCode.innerText = savedCode;
+            luckyCodeArea.style.display = 'block'; // 显示吉祥码区域
+            mergeBtn.innerText = "一键合并复制 (链接+吉祥码)"; // 更新按钮文字
+        } else {
+            // 如果没有吉祥码，隐藏该区域，按钮变为只复制链接
+            luckyCodeArea.style.display = 'none';
+            mergeBtn.innerText = "复制支付链接"; 
+        }
+    };
+
+    // --- 核心功能：合并复制 ---
+    mergeBtn.onclick = async function() {
+        let contentToCopy = "";
+        const savedCode = localStorage.getItem('wuxiangLuckyCode');
+
+        if (savedCode) {
+            // 如果有吉祥码，拼接内容：链接 + 换行 + 吉祥码
+            contentToCopy = payLink + "\n" + savedCode;
+        } else {
+            // 否则只复制链接
+            contentToCopy = payLink;
+        }
+
+        performCopy(contentToCopy, "✅ 已复制！\n请在微信粘贴后，先复制吉祥码做备注，再点链接支付。");
+    };
+
+    // --- 辅助功能：仅复制链接 ---
+    linkBtn.onclick = function() {
+        performCopy(payLink, "✅ 支付链接已复制！");
+    };
+
+    // --- 通用复制函数 (包含降级处理) ---
+    function performCopy(text, successMsg) {
+        if (navigator.clipboard && window.isSecureContext) {
+            // 现代浏览器 API
+            navigator.clipboard.writeText(text).then(() => {
+                alert(successMsg);
+            }).catch(err => {
+                fallbackCopy(text, successMsg);
+            });
+        } else {
+            // 降级方案
+            fallbackCopy(text, successMsg);
+        }
     }
-  }
 
-  // 2. 吉祥码复制功能
-  function copyFromDisplay() {
-    const code = document.getElementById('display-code').innerText;
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(code).then(() => {
-            alert('✅ 吉祥码已复制！');
-        }).catch(() => {
-            fallbackCopy(code);
-        });
-    } else {
-        fallbackCopy(code);
+    // --- 降级复制方案 (使用 execCommand) ---
+    function fallbackCopy(text, msg) {
+        tempInput.value = text;
+        tempInput.style.position = 'fixed'; // 防止页面滚动
+        tempInput.style.left = '-9999px';
+        document.body.appendChild(tempInput);
+        tempInput.focus();
+        tempInput.select();
+        
+        try {
+            document.execCommand('copy');
+            alert(msg);
+        } catch (err) {
+            alert("⚠️ 自动复制失败，请长按上方文字手动复制。");
+        }
+        
+        document.body.removeChild(tempInput);
     }
-  }
-
-  // 3. 微信收款通道复制功能
-  const payTextElement = document.getElementById('payText');
-  const textContent = payTextElement.innerText; 
-  const btn = document.getElementById('copyBtn');
-  const tempInput = document.getElementById('tempInput');
-
-  btn.onclick = async function(){
-      try{
-          await navigator.clipboard.writeText(textContent);
-          alert("✅ 复制成功！\n请前往微信粘贴发送");
-      }catch(err){
-          fallbackCopy(textContent);
-      }
-  }
-
-  // 4. 兜底复制方案（兼容旧浏览器）
-  function fallbackCopy(text) {
-      tempInput.value = text;
-      tempInput.select();
-      document.execCommand('copy');
-      alert("⚠️ 浏览器限制，已尝试自动复制。\n如失败，请长按上方方框文字手动复制");
-  }
 </script>
+
 </body>
 </html>
