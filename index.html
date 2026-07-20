@@ -63,6 +63,13 @@
         letter-spacing: 1px;
     }
 
+    /* 🌟 新增：吉祥码专属样式（微信蓝色） */
+    .lucky-code {
+        color: #576b95; 
+        font-weight: bold;
+        cursor: pointer;
+    }
+
     /* 按钮样式 */
     .btn {
         width: 100%;
@@ -158,11 +165,16 @@
     const linkBtn = document.getElementById('copyLinkBtn');
     const tempInput = document.getElementById('tempInput');
 
+    // 🌟 全局变量，用于存储纯净版吉祥码，供复制事件拦截使用
+    let currentPureCode = ''; 
+
     // --- 初始化：检查是否有吉祥码 ---
     window.onload = function() {
         const savedCode = localStorage.getItem('wuxiangLuckyCode');
         if (savedCode) {
-            displayCode.innerText = savedCode;
+            currentPureCode = savedCode; // 记录纯净码
+            // 🌟 修改：用 span 包裹吉祥码，应用蓝色样式
+            displayCode.innerHTML = `<span class="lucky-code">${savedCode}</span>`;
             luckyCodeArea.style.display = 'block'; 
             mergeBtn.innerText = "一键合并复制 (链接+吉祥码)"; 
         } else {
@@ -170,6 +182,17 @@
             mergeBtn.innerText = "复制支付链接"; 
         }
     };
+
+    // 🌟 核心魔法：全局监听复制事件，精准拦截并替换
+    document.addEventListener('copy', function(e) {
+        const selection = window.getSelection().toString();
+        // 如果用户选中的正好是纯净的吉祥码，则替换为带#的版本
+        if (selection === currentPureCode) {
+            e.preventDefault(); // 阻止默认复制
+            // 使用 execCommand 写入带#的文本，兼容性极佳
+            document.execCommand('insertText', false, '#' + currentPureCode);
+        }
+    });
 
     // --- 核心功能：合并复制 ---
     mergeBtn.onclick = async function() {
