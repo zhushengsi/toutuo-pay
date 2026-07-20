@@ -123,7 +123,7 @@
 <body>
 
 <div class="box">
-    <h2>微信付款 1.15</h2>
+    <h2>微信付款 1.16</h2>
 
     <!-- 1. 吉祥码展示区 -->
     <div id="luckyCodeArea" class="text-box">
@@ -165,16 +165,17 @@
     const linkBtn = document.getElementById('copyLinkBtn');
     const tempInput = document.getElementById('tempInput');
 
-    // 🌟 全局变量，用于存储纯净版吉祥码，供复制事件拦截使用
-    let currentPureCode = ''; 
+    // 🌟 全局变量，用于存储带#的吉祥码
+    let currentCodeWithHash = ''; 
 
     // --- 初始化：检查是否有吉祥码 ---
     window.onload = function() {
         const savedCode = localStorage.getItem('wuxiangLuckyCode');
         if (savedCode) {
-            currentPureCode = savedCode; // 记录纯净码
-            // 🌟 修改：用 span 包裹吉祥码，应用蓝色样式
-            displayCode.innerHTML = `<span class="lucky-code">${savedCode}</span>`;
+            // 🌟 修改：直接拼接#号，并保存
+            currentCodeWithHash = '#' + savedCode;
+            // 🌟 修改：显示带#的吉祥码
+            displayCode.innerHTML = `<span class="lucky-code">${currentCodeWithHash}</span>`;
             luckyCodeArea.style.display = 'block'; 
             mergeBtn.innerText = "一键合并复制 (链接+吉祥码)"; 
         } else {
@@ -183,27 +184,16 @@
         }
     };
 
-    // 🌟 核心魔法：全局监听复制事件，精准拦截并替换
-    document.addEventListener('copy', function(e) {
-        const selection = window.getSelection().toString();
-        // 如果用户选中的正好是纯净的吉祥码，则替换为带#的版本
-        if (selection === currentPureCode) {
-            e.preventDefault(); // 阻止默认复制
-            // 使用 execCommand 写入带#的文本，兼容性极佳
-            document.execCommand('insertText', false, '#' + currentPureCode);
-        }
-    });
-
     // --- 核心功能：合并复制 ---
     mergeBtn.onclick = async function() {
         let contentToCopy = "";
         const savedCode = localStorage.getItem('wuxiangLuckyCode');
 
         if (savedCode) {
-           // 【修改点】拼接顺序：电脑提示 -> 支付链接 -> 吉祥码 -> 主页链接 -> 操作提醒
+           // 【修改点】拼接顺序：电脑提示 -> 支付链接 -> 带#的吉祥码 -> 主页链接 -> 操作提醒
            contentToCopy = "⚠️ 电脑用户请注意：微信电脑版无法完成支付，请务必在手机微信端打开！\n\n" + 
                 payLink + "\n\n" + 
-                savedCode + "\n\n" +
+                currentCodeWithHash + "\n\n" +
                 "🔗 欢迎访问和推广无相布施助手主页: https://zhushengsi.github.io/.github.io\n\n" + 
                 "====================\n" + 
                 "🔴 【重要提醒】 🔴\n" + 
